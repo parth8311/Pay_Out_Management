@@ -1,0 +1,501 @@
+{
+    "info": {
+        "_postman_id": "payout-mgmt-collection",
+        "name": "Payout Management API",
+        "description": "Complete API collection for Payout Management MVP",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "variable": [
+        {
+            "key": "baseUrl",
+            "value": "http://localhost:5000/api"
+        },
+        {
+            "key": "opsToken",
+            "value": ""
+        },
+        {
+            "key": "financeToken",
+            "value": ""
+        },
+        {
+            "key": "vendorId",
+            "value": ""
+        },
+        {
+            "key": "payoutId",
+            "value": ""
+        }
+    ],
+    "item": [
+        {
+            "name": "🔐 Auth",
+            "item": [
+                {
+                    "name": "Login as OPS",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "  const json = pm.response.json();",
+                                    "  pm.collectionVariables.set('opsToken', json.token);",
+                                    "  console.log('OPS Token saved:', json.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/auth/login",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"ops@demo.com\",\n  \"password\": \"ops123\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Login as FINANCE",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 200) {",
+                                    "  const json = pm.response.json();",
+                                    "  pm.collectionVariables.set('financeToken', json.token);",
+                                    "  console.log('FINANCE Token saved:', json.token);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/auth/login",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"finance@demo.com\",\n  \"password\": \"fin123\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "Get My Profile (Auth Required)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/auth/me",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "Login - Invalid Credentials (Should Fail 401)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/auth/login",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"email\": \"wrong@email.com\",\n  \"password\": \"wrongpassword\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "🏪 Vendors",
+            "item": [
+                {
+                    "name": "GET All Vendors (OPS)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/vendors",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "GET All Vendors (FINANCE)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/vendors",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "POST Create Vendor (OPS) ✅",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "  const json = pm.response.json();",
+                                    "  pm.collectionVariables.set('vendorId', json.data._id);",
+                                    "  console.log('Vendor ID saved:', json.data._id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/vendors",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"New Vendor Ltd\",\n  \"upi_id\": \"newvendor@paytm\",\n  \"bank_account\": \"9876543210\",\n  \"ifsc\": \"HDFC0009999\",\n  \"is_active\": true\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Create Vendor (FINANCE) ❌ Should Fail 403",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/vendors",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"name\": \"Finance Vendor\",\n  \"upi_id\": \"finance@upi\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Create Vendor - Missing Name (Should Fail 400)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/vendors",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"upi_id\": \"test@upi\"\n}"
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "💸 Payouts",
+            "item": [
+                {
+                    "name": "POST Create Payout - Draft (OPS) ✅",
+                    "event": [
+                        {
+                            "listen": "test",
+                            "script": {
+                                "exec": [
+                                    "if (pm.response.code === 201) {",
+                                    "  const json = pm.response.json();",
+                                    "  pm.collectionVariables.set('payoutId', json.data._id);",
+                                    "  console.log('Payout ID saved:', json.data._id);",
+                                    "}"
+                                ]
+                            }
+                        }
+                    ],
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"vendor_id\": \"{{vendorId}}\",\n  \"amount\": 5000,\n  \"mode\": \"UPI\",\n  \"note\": \"Monthly subscription payment\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Create Payout (FINANCE) ❌ Should Fail 403",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"vendor_id\": \"{{vendorId}}\",\n  \"amount\": 1000,\n  \"mode\": \"NEFT\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Create Payout - Amount=0 (Should Fail 400)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"vendor_id\": \"{{vendorId}}\",\n  \"amount\": 0,\n  \"mode\": \"UPI\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "GET All Payouts (OPS)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/payouts",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "GET Payouts - Filter by Status=Draft",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/payouts?status=Draft",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "Draft"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "GET Payouts - Filter by Status=Submitted",
+                    "request": {
+                        "method": "GET",
+                        "url": {
+                            "raw": "{{baseUrl}}/payouts?status=Submitted",
+                            "query": [
+                                {
+                                    "key": "status",
+                                    "value": "Submitted"
+                                }
+                            ]
+                        },
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "GET Single Payout + Audit Trail",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "POST Submit Payout (OPS) ✅ Draft→Submitted",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/submit",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "POST Submit Payout (FINANCE) ❌ Should Fail 403",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/submit",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "POST Approve Payout (FINANCE) ✅ Submitted→Approved",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/approve",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "POST Approve Payout (OPS) ❌ Should Fail 403",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/approve",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{opsToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "POST Reject Payout (FINANCE) ✅ with Reason",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/reject",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"decision_reason\": \"Duplicate payment request. Already processed last week.\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Reject Payout - No Reason (Should Fail 400)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/reject",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            },
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"decision_reason\": \"\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST Approve from Draft ❌ Should Fail 400 (Status Jump)",
+                    "request": {
+                        "method": "POST",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}/approve",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{financeToken}}"
+                            }
+                        ]
+                    }
+                },
+                {
+                    "name": "GET Payout - No Token (Should Fail 401)",
+                    "request": {
+                        "method": "GET",
+                        "url": "{{baseUrl}}/payouts/{{payoutId}}"
+                    }
+                }
+            ]
+        }
+    ]
+}
