@@ -372,7 +372,7 @@ textarea {
 
 .btn-primary:hover {
   background: var(--primary-dark);
-  transform: translateY(-1px);
+  transform: translateY(-1px) scale(1.02);
   box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
 }
 
