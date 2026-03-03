@@ -89,9 +89,10 @@ CLIENT_URL=http://localhost:5173
 | POST   | /api/payouts/:id/approve  | FINANCE only   | Submitted → Approved   |
 | POST   | /api/payouts/:id/reject   | FINANCE only   | Submitted → Rejected   |
 
----
-
-## 🎯 Role Permissions
+### 📋 Features
+- **RBAC:** Server-side role enforcement (OPS vs FINANCE).
+- **Audit Trail:** Every payout action is logged with user and timestamp.
+- **Validation:** Strict status transition monitoring.
 
 | Action              | OPS | FINANCE |
 |---------------------|-----|---------|
